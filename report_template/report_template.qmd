@@ -1,0 +1,245 @@
+```{=latex}
+\vspace{-2.5cm}
+```
+
+```{r}
+#| label: setup
+
+# nolint: object_usage_linter
+
+# Packages
+library(purrr)
+library(readr)
+library(glue)
+library(here)
+library(dplyr)
+library(lubridate)
+library(tibble)
+library(stringr)
+
+# source appropriate custom functions
+list.files(here("R"), full.names = TRUE) |> 
+  walk(source)
+
+infile = here("data", "anon_data.tsv")
+
+clean_report_data <- read_tsv(
+  infile,
+  # locale = locale(encoding = "UTF-16LE"),
+  quote  = ""                # optional but avoids surprises in HTML columns
+) |>
+  clean_df() |>
+  mutate(main_q_text = strip_html_tags(main_q_text))
+
+# WARNING: filter needs to be params$respid (commented version)for things to 
+# render correctly
+
+# filter data based on params
+sub_report_data <- clean_report_data |>
+  filter(respid == params$respid)
+
+```
+
+```{r}
+#| label: var_creation
+
+first_name = unique(sub_report_data$first_name)
+last_name = unique(sub_report_data$last_name)
+
+# Respondent Information
+full_name = glue("{first_name} {last_name}")
+
+country = unique(sub_report_data$country)
+
+customer = unique(sub_report_data$customer)
+
+title = unique(sub_report_data$title)
+
+human_date = unique(sub_report_data$complete_datetime) |> 
+  date()
+
+safe_full_name <- escape_latex_inline(full_name)
+safe_customer  <- escape_latex_inline(customer)
+safe_country   <- escape_latex_inline(country)
+
+```
+
+```{r}
+#| label: footer_injection
+#| output: asis
+
+footer_text <- glue::glue('
+```{{=latex}}
+
+% Static header on the top left in footnotesize
+\\fancyhead[L]{{\\footnotesize [VENDOR] 2025 Customer Satisfaction Survey}}
+\\fancyfoot[L]{{\\footnotesize Individual Report: {safe_full_name}/{safe_customer}/{safe_country}\\\\Property of [VENDOR] - Restricted Confidential}}
+\\fancyfoot[R]{{\\footnotesize Page \\thepage\\ of \\pageref{{LastPage}}}}
+```'
+)
+
+cat(footer_text)
+
+```
+# Respondent Information
+```{=latex}
+\vspace{-1em}
+\hrule
+\vspace{0.5em}
+```
+
+Respondent Name: **`r full_name`**
+
+Country: **`r country`**
+
+Customer: **`r customer`**
+
+Respondent Title: **`r title`**
+
+Date Completed: **`r human_date`**
+
+```{r}
+#| label: q3
+#| echo: false
+
+q3_text <- get_main_q_text(sub_report_data, "q3") |> 
+  escape_latex()
+
+q3_resp <- get_response(sub_report_data, "q3") |> 
+  escape_latex()
+
+lookup_table <- tribble(
+  ~selection,                           ~letter, 
+  "[VENDOR] [Sector 1]",                        "a", 
+  "[VENDOR] [Sector 2]",                       "b", 
+  "[VENDOR] [Sector 3]",        "c",
+  "[VENDOR] [Sector 4]",                       "d"
+)
+
+# find which categories in selection column of lookup_table exist as strings 
+# in q4_resp
+q3_resp_vec = lookup_table |> 
+  filter(str_detect(q3_resp, selection)) |> 
+  mutate(selection = glue("**{selection}**")) |> 
+  pull(selection)
+
+# format vector object so that each item is on its own line when called in 
+# markdown
+q3_resp_to_print = paste(q3_resp_vec, collapse = "  \n\n")
+
+```
+
+## Q5aa. `r q3_text`
+`r q3_resp_to_print`
+
+```{r}
+#| label: q1new
+
+# question text
+q1new_text = get_main_q_text(sub_report_data, "q1new")
+
+filter_response = sub_report_data |> 
+  filter(qid == "q1new") |> 
+  pull(response)
+
+# Get rid of erroneous categories
+multi_response = filter_response |> 
+  str_extract_all("(?<=<b>).*?(?=</b>)") |> 
+  unlist() |> 
+  str_remove(":")
+
+# embed markdown formatting
+
+# insert ** at start and end using 
+# stringr package functions
+q1new_resp_vec = multi_response |> 
+  str_replace_all("^(.*)$", "**\\1**")
+
+```
+
+## Q5ab. `r q1new_text`
+
+```{r}
+#| label: q1new_resp_render
+#| output: asis
+
+walk(q1new_resp_vec, ~cat(.x, "\n\n"))
+
+```
+
+```{r}
+#| label: q5aa
+
+# question text
+q5aa_text = get_main_q_text(sub_report_data, "q5aa") |> 
+  escape_latex()
+
+q5aa_resp = get_response(sub_report_data, "q5aa") |> 
+  escape_latex()
+
+```
+
+# Overall Evaluation of [VENDOR]
+```{=latex}
+\vspace{-1em}
+\hrule
+\vspace{0.5em}
+```
+
+## `r q5aa_text`
+`r q5aa_resp`
+
+```{r}
+#| label: q5ab
+
+# question text
+q5ab_text = get_main_q_text(sub_report_data, "q5ab") |> 
+  escape_latex()
+
+q5ab_resp = get_response(sub_report_data, "q5ab") |> 
+  escape_latex()
+
+```
+
+## `r q5ab_text`
+`r q5ab_resp`
+
+```{r}
+#| label: q5-q10
+#| output: asis
+
+sub_report_data |> 
+  generate_q5_q10()
+
+```
+
+```{r}
+#| label: q11new_oe
+
+q11new_oe_text = get_main_q_text(sub_report_data, "q11new_oe")
+
+q11new_oe_resps = get_response(sub_report_data, "q11new_oe")
+
+```
+
+```{r}
+#| label: q12_oe
+
+q12_oe_text = get_main_q_text(sub_report_data, "q12_oe")
+
+q12_oe_resps = get_response(sub_report_data, "q12_oe")
+
+```
+
+# Wrap-Up
+```{=latex}
+\vspace{-1em}
+\hrule
+\vspace{0.5em}
+```
+
+## `r q11new_oe_text`
+`r q11new_oe_resps`
+
+## `r q12_oe_text`
+`r q12_oe_resps`

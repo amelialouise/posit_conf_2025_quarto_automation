@@ -1,0 +1,40 @@
+project:
+  type: default
+  
+title: "[Vendor] Customer Satisfaction"
+format:
+  pdf:
+    latex: true
+    pdf-engine: xelatex
+    mainfont: "Arial"
+    sansfont: "Arial"
+    header-includes: |
+      \usepackage{array}
+      \usepackage{xeCJK}
+      \usepackage{sectsty}
+      \usepackage{titlesec}
+      \usepackage{bold-extra}
+      \usepackage{xcolor}
+      \usepackage{colortbl}
+      \usepackage{fancyhdr} % Add fancyhdr for custom footer
+      \usepackage{lastpage} % Required for total page count
+      \pagestyle{fancy} % Activate fancy page style
+      \fancyhf{} % Clear default header and footer
+      \fancyhead[L]{\footnotesize [VENDOR] 2024 Customer Satisfaction Survey} % Header on all pages
+      % Remove page number from the first page
+      \fancypagestyle{plain}{
+        \fancyfoot[C]{} % Remove footer on the first page
+      }
+      \fancyfoot[L]{\footnotesize Individual Report: {full_name}/{customer}/{country}} % Custom footer text on all pages
+      \fancyfoot[R]{\footnotesize Page \thepage\ of \pageref{LastPage}} % Page number on the right from second page onward
+tbl-colwidths: [85,15]
+geometry: 
+  top=1in, bottom=1in, left=1in, right=1in
+execute: 
+  echo: false
+  warning: false
+  message: false
+  
+render:
+  - document: report_template/report_template.qmd
+    render: false
