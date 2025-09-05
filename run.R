@@ -9,6 +9,8 @@ library(stringr)
 library(readr)
 library(data.table)
 library(here)
+library(glue)
+library(lubridate)
 
 list.files(here("R"), full.names = TRUE) |>
   walk(source)
@@ -18,7 +20,7 @@ list.files(here("R"), full.names = TRUE) |>
 ## Deal w/ Conversion from UTF-16LE to UTF-8
 infile = here("data", "anon_data.tsv")
 
-the_data <- readr::read_delim(
+the_data <- read_delim(
   infile,
   delim = "\t", # change to "\t" if it’s TSV
   # locale = locale(encoding = "UTF-16LE"),
@@ -29,18 +31,18 @@ the_data <- readr::read_delim(
 
 # Data Filtering -----------------------------------------------------------
 
-start_date <- lubridate::as_datetime("2025-05-01 00:00:01")
-end_date <- lubridate::as_datetime("2025-08-05 12:59:00")
+start_date <- as_datetime("2025-05-01 00:00:01")
+end_date <- as_datetime("2025-08-05 12:59:00")
 
 # data within window
 filtered_data <- filter_resps(the_data, start_date, end_date)
 
 if (nrow(filtered_data) == 0) {
-  cli::cli_abort("No data in selected window")
+  cli_abort("No data in selected window")
 }
 
 list_of_resps <- unique(filtered_data$respid)
-cli::cli_alert_info(
+cli_alert_info(
   "{length(list_of_resps)} unique respondents in the selected window"
 )
 
@@ -113,7 +115,7 @@ files_to_render <- list.files(temp_qmd_dir, full.names = TRUE)
 files_to_render <- files_to_render |>
   keep(~ str_detect(.x, ".qmd$"))
 
-files_to_render |> walk(~ quarto::quarto_render(.))
+files_to_render |> walk(~ quarto_render(.))
 
 # Cleanup and File Mover -------------------------------------------------
 
@@ -121,11 +123,11 @@ files_to_render |> walk(~ quarto::quarto_render(.))
 output_dir = "./output/"
 today_str = lubridate::today()
 
-if (!dir.exists(glue::glue("{output_dir}{today_str}"))) {
-  dir.create(glue::glue("{output_dir}{today_str}"))
+if (!dir.exists(glue("{output_dir}{today_str}"))) {
+  dir.create(glue("{output_dir}{today_str}"))
 }
 
-to_write_to = glue::glue("{output_dir}{today_str}/")
+to_write_to = glue("{output_dir}{today_str}/")
 
 # move all pdf files in tmp_qmds directory to output directory
 pdf_files = list.files(temp_qmd_dir, pattern = ".pdf", full.names = TRUE)
@@ -139,14 +141,14 @@ walk(files_to_render, ~ file.remove(.))
 
 # write a log file outlining start and end dates in output subdirectory
 write_file(
-  glue::glue(
+  glue(
     "Start Date: {start_date}
                        End Date: {end_date}
                        Number of Respondents: {length(list_of_resps)}"
   ),
-  glue::glue("{to_write_to}log.txt")
+  glue("{to_write_to}log.txt")
 )
 
 # Alert User -------------------------------------------------------------
 
-cli::cli_alert_success("Automation Complete - check output folder for PDFs")
+cli_alert_success("Automation Complete - check output folder for PDFs")
