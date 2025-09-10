@@ -160,6 +160,8 @@ To update the visual identity (fonts, footer text, colors), edit:
 
 ---
 
-## Attribution
+## Attribution and Licensing
+
+This project is licensed under the [MIT License](./LICENSE).
 
 Anonymized example maintained by KS&R’s Decision Sciences & Innovation (DSI) team for the Posit Conf 2025 talk “Using Quarto to Improve Formatting and Automate the Generation of Hundreds of Reports”.
