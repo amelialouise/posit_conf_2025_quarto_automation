@@ -11,6 +11,7 @@ library(data.table)
 library(here)
 library(glue)
 library(lubridate)
+library(cli)
 
 list.files(here("R"), full.names = TRUE) |>
   walk(source)
