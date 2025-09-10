@@ -4,7 +4,7 @@ Modern, scalable survey reporting with R, tidyverse, and Quarto — the anonymiz
 
 ## Why This Exists
 
-KS&R’s DSI team automated weekly production of hundreds of personalized PDF reports over several months. This repo demonstrates the core pattern end‑to‑end on anonymized, fake data: clean inputs, generate parameterized Quarto files, render to PDF with consistent branding, and archive outputs — all reproducibly in Git with `renv`.
+KS&R’s DS&I team automated weekly production of hundreds of personalized PDF reports over several months. This repo demonstrates the core pattern end‑to‑end on anonymized, fake data: clean inputs, generate parameterized Quarto files, render to PDF with consistent branding, and archive outputs — all reproducibly in Git with `renv`.
 
 ## What You Get
 
@@ -50,7 +50,7 @@ install.packages("renv")             # if not already installed
 renv::restore()                       # installs the locked package versions
 ```
 
-3) Verify Quarto + XeLaTeX are available:
+3) Verify Quarto + XeLaTeX are available (in the terminal):
 
 ```bash
 quarto check
@@ -62,7 +62,17 @@ If PDF is missing, install TinyTeX from R:
 install.packages("tinytex")
 tinytex::install_tinytex()
 ```
+4) Ensure that the font specified in the quarto template is available on your system.
 
+Linux/macOS
+```bash
+fc-list | grep -i "Arial"
+```
+
+Windows
+```powershell
+(Get-ChildItem "C:\Windows\Fonts" | Where-Object { $_.Name -match "Arial" }).FullName
+```
 ---
 
 ## Quick Start
