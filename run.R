@@ -116,7 +116,7 @@ files_to_render <- list.files(temp_qmd_dir, full.names = TRUE)
 files_to_render <- files_to_render |>
   keep(~ str_detect(.x, ".qmd$"))
 
-files_to_render |> walk(~ quarto_render(.))
+files_to_render |> walk(~ quarto::quarto_render(.))
 
 # Cleanup and File Mover -------------------------------------------------
 
@@ -125,10 +125,10 @@ output_dir = "./output/"
 today_str = lubridate::today()
 
 if (!dir.exists(glue("{output_dir}{today_str}"))) {
-  dir.create(glue("{output_dir}{today_str}"))
+  dir.create(glue("{output_dir}{today_str}"), recursive = TRUE)
 }
 
-to_write_to = glue("{output_dir}{today_str}/")
+to_write_to = glue("{output_dir}{today_str}")
 
 # move all pdf files in tmp_qmds directory to output directory
 pdf_files = list.files(temp_qmd_dir, pattern = ".pdf", full.names = TRUE)
